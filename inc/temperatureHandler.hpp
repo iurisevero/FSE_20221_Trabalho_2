@@ -1,0 +1,5 @@
+#ifndef TEMPERATURE_HANDLER_HPP
+#define TEMPERATURE_HANDLER_HPP
+
+
+#endif
