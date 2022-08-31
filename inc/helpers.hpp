@@ -13,6 +13,7 @@ void sleepMs(int t);
 int setPins();
 void setResistorPotency(int value);
 void setFanPotency(int value);
+bool somethingOn();
 
 // Modbus
 ssize_t getSize(unsigned char * begin, unsigned char * end);

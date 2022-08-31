@@ -1,6 +1,8 @@
 #ifndef CONSTS_HPP
 #define CONSTS_HPP
 
+#include "semaphore.hpp"
+
 #define TEMPO_ENTRE_REQUEST 50
 
 #define ENDERECO 0x00
@@ -23,7 +25,10 @@
 
 extern const char MATRICULA[4];
 
-extern bool run, turnOn, heating;
+extern semaphore smph;
+
+extern bool run, turnOn, heating, timerOn;
 extern int timer;
+extern float roomTemp;
 
 #endif

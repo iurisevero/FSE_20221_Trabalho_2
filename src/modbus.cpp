@@ -2,7 +2,7 @@
 #include "helpers.hpp"
 #include "crc16.hpp"
 #include "uart.hpp"
-#include "consts.hpp"
+#include "globalValues.hpp"
 
 ssize_t assembleProtocol(unsigned char * message, unsigned char cmd, bool isRequest/*=false*/){
     ssize_t _size = 0;

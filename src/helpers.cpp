@@ -1,6 +1,6 @@
 #include "helpers.hpp"
 #include "crc16.hpp"
-#include "consts.hpp"
+#include "globalValues.hpp"
 
 #include <stdio.h>
 #include <wiringPi.h>
@@ -34,7 +34,14 @@ void setResistorPotency(int value){
 }
 
 void setFanPotency(int value){
-    pwmWrite(VENTOINHA, std::max(std::min(value, 100), 40));
+    if(value > 0)
+        pwmWrite(VENTOINHA, std::max(std::min(value, 100), 40));
+    else
+        pwmWrite(VENTOINHA, 0);
+}
+
+bool somethingOn(){
+    return digitalRead(RESISTOR) || digitalRead(VENTOINHA);
 }
 
 // Modbus

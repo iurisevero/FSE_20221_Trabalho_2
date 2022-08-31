@@ -1,52 +1,32 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <wiringPi.h>
+#include <thread>
+#include <csignal>
 
-#include "consts.hpp"
+#include "globalValues.hpp"
 #include "helpers.hpp"
 #include "uart.hpp"
 #include "crc16.hpp"
 #include "modbus.hpp"
 #include "pid.hpp"
 
-void handleUserInput(int userCmd){
-    unsigned char byte;
-    if(turnOn){
-        switch (userCmd){
-            case 0x02:
-                turnOn = false;
-                byte = 0;
-                sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
-                break;
-            case 0x03:
-                heating = true;
-                byte = 1;
-                sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
-                break;
-            case 0x04:
-                heating = false;
-                byte = 0;
-                sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
-                break;
-            case 0x05:
-                timer++;
-                break;
-            case 0x06:
-                timer--;
-                break;
-            case 0x07:
-                printf("TODO\n");
-                break;
-            default:
-                printf("Comando não listado.\n");
-        }
-    }
-    else if(userCmd == 0x01){
-        turnOn = true;
-        byte = 1;
-        sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
-    }
+#include "temperatureHandler.hpp"
+#include "timerHandler.hpp"
+#include "userCommandHandler.hpp"
+
+void signalHandler(int signum){
+    printf("Interrupt signal (%d) received.\n", signum);
+    printf("Stopping program.... It may take some seconds while the threads are finished\n");
+    run = false;
+}
+
+void reset(){
+    sendControlSignal(0);
+    unsigned char byte = 0;
+    sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+    sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+    sendData(CMD_ENVIA_TEMPORIZADOR, 0);
 }
 
 int main(int argc, const char * argv[]) {
@@ -57,17 +37,18 @@ int main(int argc, const char * argv[]) {
 
     char uartPath[] = "/dev/serial0";
     int uartFilestream = Uart::openUart(uartPath);
-    while(run){
-        sendDataRequest(CMD_SOLICITA_COMANDO_USUARIO);
-        sleepMs(TEMPO_ENTRE_REQUEST);
-        int userCmd;
-        ssize_t rx_length = receiveData(CMD_SOLICITA_COMANDO_USUARIO, &userCmd);
-        if(rx_length > 0 && userCmd != 0){
-            printf("Comando usuário: %#x\n", userCmd);
-            handleUserInput(userCmd);
-        }
-        sleepMs(TEMPO_ENTRE_REQUEST);
-    }
+    
+    signal(SIGINT, signalHandler); 
+    smph.release();
+
+    reset();
+
+    std::thread runUserCommandHandler(runUserCommand);
+    std::thread runTimerHandler(runTimer);
+    std::thread runTemperatureHandler(heat);
+    runUserCommandHandler.join();
+    runTimerHandler.join();
+    runTemperatureHandler.join();
 
     close(uartFilestream);
     return 0;
