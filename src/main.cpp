@@ -40,9 +40,18 @@ int setPins(){
 void reset(){
     sendControlSignal(0);
     unsigned char byte = 0;
+    int ret;
     sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+    sleepMs(TEMPO_ENTRE_REQUEST);
+    receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
+    sleepMs(TEMPO_ENTRE_REQUEST);
     sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+    sleepMs(TEMPO_ENTRE_REQUEST);
+    receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
+    sleepMs(TEMPO_ENTRE_REQUEST);
     sendData(CMD_ENVIA_TEMPORIZADOR, 0);
+    sleepMs(TEMPO_ENTRE_REQUEST);
+    receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
     ClrLcd();
 }
 

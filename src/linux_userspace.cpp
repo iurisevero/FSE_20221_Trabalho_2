@@ -217,14 +217,14 @@ int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev)
             fprintf(stderr, "Failed to get sensor data (code %+d).", rslt);
             break;
         }
-
+        roomTemp = comp_data.temperature;
         // print_sensor_data(&comp_data);
-        sleepMs(1000);
+        sleepMs(900);
     }
 
     return rslt;
 }
 
-struct bme280_data getData(){
+struct bme280_data getSensorData(){
     return comp_data;
 }

@@ -7,13 +7,26 @@
 #include <softPwm.h>
 #include <algorithm>
 #include <chrono>
+#include <ctime>
 #include <thread>
+#include <iostream>
+#include <string>
 
 // Time
 uint64_t getTimeMs(){
     return std::chrono::duration_cast<std::chrono::milliseconds>(
         std::chrono::system_clock::now().time_since_epoch()
     ).count();
+}
+
+std::string getTimeNow(){
+    std::time_t now= std::time(0);
+    std::tm* now_tm= std::localtime(&now);
+    now_tm->tm_zone = "BRL";
+    now_tm->tm_gmtoff = 10800;
+    char buf[42];
+    std::strftime(buf, 42, "%Y %m %d %X", now_tm);
+    return buf;
 }
 
 void sleepMs(int t){

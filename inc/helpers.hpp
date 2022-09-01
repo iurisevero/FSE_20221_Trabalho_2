@@ -4,10 +4,12 @@
 #include <string.h>
 #include <stdlib.h>
 #include <cstdint>
+#include <string>
 
 // Time
 uint64_t getTimeMs();
 void sleepMs(int t);
+std::string getTimeNow();
 
 // WiringPi
 int setPins();

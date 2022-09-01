@@ -7,6 +7,7 @@ uint64_t startTime = 0;
 
 void runTimer(){
     bool getStartTime = false;
+    int ret;
     while(run){
         if(timerOn){
             if(!getStartTime){
@@ -23,6 +24,8 @@ void runTimer(){
             }
 
             sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
+            sleepMs(TEMPO_ENTRE_REQUEST);
+            receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
 
             sleepMs(200);
         } else {

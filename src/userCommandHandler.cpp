@@ -25,12 +25,15 @@ void runUserCommand(){
 
 void handleUserInput(int userCmd){
     unsigned char byte;
+    int ret;
     if(turnOn){
         switch (userCmd){
             case 0x02:
                 turnOn = false;
                 byte = 0;
                 sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+                sleepMs(TEMPO_ENTRE_REQUEST);
+                receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
                 ClrLcd();
                 break;
             case 0x03:
@@ -39,6 +42,8 @@ void handleUserInput(int userCmd){
                 smph.release();
                 byte = 1;
                 sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+                sleepMs(TEMPO_ENTRE_REQUEST);
+                receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
                 break;
             case 0x04:
                 smph.acquire();
@@ -46,16 +51,22 @@ void handleUserInput(int userCmd){
                 smph.release();
                 byte = 0;
                 sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+                sleepMs(TEMPO_ENTRE_REQUEST);
+                receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
                 break;
             case 0x05:
                 timer++;
                 if(!timerOn) sendData(CMD_ENVIA_TEMPORIZADOR, timer);
                 else sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
+                sleepMs(TEMPO_ENTRE_REQUEST);
+                receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
                 break;
             case 0x06:
                 timer--;
                 if(!timerOn) sendData(CMD_ENVIA_TEMPORIZADOR, timer);
                 else sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
+                sleepMs(TEMPO_ENTRE_REQUEST);
+                receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
                 break;
             case 0x07:
                 printf("TODO\n");
@@ -68,5 +79,7 @@ void handleUserInput(int userCmd){
         turnOn = true;
         byte = 1;
         sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
     }
 }

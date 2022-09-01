@@ -14,13 +14,14 @@ ssize_t sendData(unsigned char cmd, float value);
 ssize_t sendData(unsigned char cmd, unsigned char value);
 ssize_t sendData(unsigned char cmd, char * value);
 ssize_t sendAssembleData(unsigned char * message, ssize_t _size);
-ssize_t receiveData(unsigned char cmd, int * value);
-ssize_t receiveData(unsigned char cmd, float * value);
-ssize_t receiveData(unsigned char cmd, char * value);
+ssize_t receiveData(unsigned char cmd, int * value, bool isReturn=false);
+ssize_t receiveData(unsigned char cmd, float * value, bool isReturn=false);
+ssize_t receiveData(unsigned char cmd, char * value, bool isReturn=false);
 ssize_t receiveConstantSizeData(
     unsigned char * message,
     ssize_t expectedSize,
-    unsigned char subCmd
+    unsigned char subCmd,
+    bool isReturn=false
 );
 
 #endif

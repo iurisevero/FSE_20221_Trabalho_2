@@ -70,25 +70,25 @@ ssize_t sendAssembleData(unsigned char * message, ssize_t _size){
     return Uart::sendData(message, _size);
 }
 
-ssize_t receiveData(unsigned char cmd, int * value){
+ssize_t receiveData(unsigned char cmd, int * value, bool isReturn/*=false*/){
     unsigned char * message = (unsigned char *) malloc(9);
     ssize_t expectedSize = 9;
-    ssize_t _size = receiveConstantSizeData(message, expectedSize, cmd);
+    ssize_t _size = receiveConstantSizeData(message, expectedSize, cmd, isReturn);
     memcpy(value, &message[3], sizeof(int));
     free(message);
     return _size;
 }
 
-ssize_t receiveData(unsigned char cmd, float * value){
+ssize_t receiveData(unsigned char cmd, float * value, bool isReturn/*=false*/){
     unsigned char * message = (unsigned char *) malloc(9);
     ssize_t expectedSize = 9;
-    ssize_t _size = receiveConstantSizeData(message, expectedSize, cmd);
+    ssize_t _size = receiveConstantSizeData(message, expectedSize, cmd, isReturn);
     memcpy(value, &message[3], sizeof(float));
     free(message);
     return _size;
 }
 
-ssize_t receiveData(unsigned char cmd, char * value){
+ssize_t receiveData(unsigned char cmd, char * value,  bool isReturn/*=false*/){
     unsigned char * message = (unsigned char *) malloc(4);
     ssize_t expectedSize = 4;
     ssize_t _size = Uart::receiveData(message, expectedSize);
@@ -97,7 +97,7 @@ ssize_t receiveData(unsigned char cmd, char * value){
         return -1;
     }
 
-    if(!checkReceivedData(message, ENDERECO, CMD_SOLICITACAO, cmd)){
+    if(!checkReceivedData(message, ENDERECO, (isReturn? CMD_ENVIO : CMD_SOLICITACAO), cmd)){
         printf("Erro! Mensagem recebida não segue o padrao esperado.\n");
         return -2;
     }
@@ -127,14 +127,14 @@ ssize_t receiveData(unsigned char cmd, char * value){
     return strSize;
 }
 
-ssize_t receiveConstantSizeData(unsigned char * message, ssize_t expectedSize, unsigned char subCmd){
+ssize_t receiveConstantSizeData(unsigned char * message, ssize_t expectedSize, unsigned char subCmd, bool isReturn/*=false*/){
     ssize_t _size = Uart::receiveData(message, expectedSize);
     if(_size != expectedSize){
         printf("Erro! Tamanho do dado recebido nao corresponde ao esperado\n");
         return -1;
     }
 
-    if(!checkReceivedData(message, ENDERECO, CMD_SOLICITACAO, subCmd)){
+    if(!checkReceivedData(message, ENDERECO, (isReturn? CMD_ENVIO : CMD_SOLICITACAO), subCmd)){
         printf("Erro! Mensagem recebida não segue o padrao esperado.\n");
         return -2;
     }

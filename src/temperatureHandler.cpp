@@ -75,8 +75,12 @@ void sendControlSignal(int controlSignal){
     if(controlSignal > 0){
         setResistorPotency(controlSignal);
         setFanPotency(0);
+        resistorPercent = controlSignal;
+        fanPercent = 0;
     } else {
         setResistorPotency(0);
         setFanPotency(controlSignal * -1);
+        resistorPercent = 0;
+        fanPercent = controlSignal * -1;
     }
 }

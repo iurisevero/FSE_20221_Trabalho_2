@@ -6,5 +6,5 @@ const bool debug = true;
 semaphore smph;
 
 bool run = true, turnOn = false, heating = false, timerOn = false;
-int timer = 0;
-float roomTemp = 25.0f;
+int timer = 0, fanPercent = 0, resistorPercent = 0;
+float roomTemp = 30.0f;

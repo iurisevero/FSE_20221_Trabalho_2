@@ -104,6 +104,6 @@ void runBME280Sensors(int _idFd);
 /*!
  * @brief Function returns the struct with the captured data
  */
-struct bme280_data getData();
+struct bme280_data getSensorData();
 
 #endif
