@@ -24,6 +24,7 @@
 #define MATRICULA_SIZE 4
 
 extern const char MATRICULA[4];
+extern const bool debug;
 
 extern semaphore smph;
 

@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include <wiringPi.h>
+#include <softPwm.h>
 #include <algorithm>
 #include <chrono>
 #include <thread>
@@ -20,24 +21,15 @@ void sleepMs(int t){
 }
 
 // WiringPi
-int setPins(){
-    if(wiringPiSetup() == -1)
-        return -1;
-
-    pinMode(RESISTOR, OUTPUT);
-    pinMode(VENTOINHA, OUTPUT);
-    return 0;
-}
-
 void setResistorPotency(int value){
-    pwmWrite(RESISTOR, std::min(value, 100));
+    softPwmWrite(RESISTOR, std::min(value, 100));
 }
 
 void setFanPotency(int value){
     if(value > 0)
-        pwmWrite(VENTOINHA, std::max(std::min(value, 100), 40));
+        softPwmWrite(VENTOINHA, std::max(std::min(value, 100), 40));
     else
-        pwmWrite(VENTOINHA, 0);
+        softPwmWrite(VENTOINHA, 0);
 }
 
 bool somethingOn(){

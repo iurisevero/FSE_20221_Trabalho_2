@@ -54,7 +54,7 @@ float getInternalTemp(){
     sleepMs(TEMPO_ENTRE_REQUEST);
     float inTemp;
     rx_length = receiveData(CMD_SOLICITA_TEMPERATURA_INTERNA, &inTemp);
-    printf("%d Bytes lidos; Temperatura interna: %f\n", rx_length, inTemp);
+    if(debug) printf("%ld Bytes lidos; Temperatura interna: %f\n", rx_length, inTemp);
     sleepMs(TEMPO_ENTRE_REQUEST);
     return inTemp;
 }
@@ -65,7 +65,7 @@ float getReferenceTemp(){
     sleepMs(TEMPO_ENTRE_REQUEST);
     float refTemp;
     rx_length = receiveData(CMD_SOLICITA_TEMPERATURA_REFERENCIA, &refTemp);
-    printf("%d Bytes lidos; Temperatura de Referencia: %f\n", rx_length, refTemp);
+    if(debug) printf("%ld Bytes lidos; Temperatura de Referencia: %f\n", rx_length, refTemp);
     sleepMs(TEMPO_ENTRE_REQUEST);
     return refTemp;
 }

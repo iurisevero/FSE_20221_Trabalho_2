@@ -1,6 +1,7 @@
 #include "globalValues.hpp"
 
 const char MATRICULA[4] = {5, 5, 1, 4};
+const bool debug = true;
 
 semaphore smph;
 

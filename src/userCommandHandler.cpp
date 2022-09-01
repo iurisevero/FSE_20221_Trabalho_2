@@ -5,6 +5,7 @@
 #include "helpers.hpp"
 #include "modbus.hpp"
 #include "timerHandler.hpp"
+#include "i2cLCD.hpp"
 
 void runUserCommand(){
     int userCmd;
@@ -30,6 +31,7 @@ void handleUserInput(int userCmd){
                 turnOn = false;
                 byte = 0;
                 sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+                ClrLcd();
                 break;
             case 0x03:
                 smph.acquire();

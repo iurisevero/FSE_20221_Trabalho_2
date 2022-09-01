@@ -1,5 +1,6 @@
 #include "uart.hpp"
 #include "helpers.hpp"
+#include "globalValues.hpp"
 
 #include <stdlib.h>
 
@@ -17,7 +18,7 @@ int Uart::openUart(char * file_path){
     }
     else
     {
-        printf("UART inicializada!\n");
+        if(debug) printf("UART inicializada!\n");
     }    
     struct termios options;
     tcgetattr(uartFilestream, &options);
@@ -33,14 +34,14 @@ int Uart::openUart(char * file_path){
 
 ssize_t Uart::sendData(unsigned char * txBuffer, ssize_t sizeBuffer){
     if (uartFilestream != -1){
-        printf("Escrevendo caracteres na UART ...");
+        if(debug) printf("Escrevendo caracteres na UART ...");
         ssize_t count = write(uartFilestream, txBuffer, sizeBuffer);
         if (count < 0){
             printf("UART TX error\n");
             return count;
         }
         else{
-            printf("Escrito.\n");
+            if(debug) printf("Escrito.\n");
             return 0;
         }
     }
@@ -60,13 +61,13 @@ ssize_t Uart::receiveData(unsigned char * rxBuffer, ssize_t _size){
                 return rx_length;
             }
             else if (rx_length == 0){
-                printf("Nenhum dado disponível.\n"); //No data waiting
+                if(debug) printf("Nenhum dado disponível.\n"); //No data waiting
                 return actual_size;
             }
 
             // Debug
             aux_buffer[rx_length] = '\0';
-            printf("%li Bytes lidos\n", rx_length);
+            if(debug) printf("%li Bytes lidos\n", rx_length);
             printArrHex(aux_buffer, rx_length);
 
             memcpy(&rxBuffer[actual_size], aux_buffer, rx_length);
