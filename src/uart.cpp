@@ -53,29 +53,38 @@ ssize_t Uart::sendData(unsigned char * txBuffer, ssize_t sizeBuffer){
 ssize_t Uart::receiveData(unsigned char * rxBuffer, ssize_t _size){
     if (uartFilestream != -1){
         ssize_t actual_size = 0, expected_size = _size;
+        int count = 100;
+        unsigned char * aux_buffer = (unsigned char *) malloc(expected_size + 1);
         do{
-            unsigned char * aux_buffer = (unsigned char *) malloc(expected_size + 1);
             ssize_t rx_length = read(uartFilestream, (void *) aux_buffer, expected_size);
             if (rx_length < 0){
-                printf("Erro na leitura.\n"); //An error occured (will occur if there are no bytes)
-                return rx_length;
+                // printf("Erro na leitura.\n"); //An error occured (will occur if there are no bytes)
+                sleepMs(5);
+                count--;
+                continue;
+                // return rx_length;
             }
-            else if (rx_length == 0){
-                if(debug) printf("Nenhum dado disponível.\n"); //No data waiting
-                return actual_size;
+            if (rx_length == 0){
+                // if(debug) printf("Nenhum dado disponível.\n"); //No data waiting
+                sleepMs(5);
+                count--;
+                continue;
+                // return actual_size;
             }
 
             // Debug
             aux_buffer[rx_length] = '\0';
-            if(debug) printf("%li Bytes lidos\n", rx_length);
-            printArrHex(aux_buffer, rx_length);
+            if(debug){
+                printf("%li Bytes lidos\n", rx_length);
+                printArrHex(aux_buffer, rx_length);
+            }
 
             memcpy(&rxBuffer[actual_size], aux_buffer, rx_length);
             actual_size += rx_length;
             expected_size -= rx_length;
             
-            free(aux_buffer);
-        } while(expected_size);
+        } while(expected_size && count);
+        free(aux_buffer);
         return actual_size;
     }
     printf("Filestream da UART inválido\n");

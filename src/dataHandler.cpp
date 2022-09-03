@@ -13,33 +13,34 @@
 std::fstream fs;
 std::string timeNow;
 int timeLeft;
-float inTemp, refTemp;
+char dataFileName[] = "data.csv";
 
 void dataHandler(){
-    fs.open ("data.csv", std::fstream::app);
+    if(!isFileExist(dataFileName)) setHeader();
+
+    if(turnOn){
+        updateData();
+        saveData();
+        displayData();
+    }
+    sleepMs(1000);
+}
+
+void setHeader(){
+    fs.open (dataFileName, std::fstream::app);
     fs << "Data e Hora,Temperatura interna,"
     << "Temperatura externa,Temperatura de referencia,"
     << "Resistor(%),Venoinha(%)" << std::endl;
     fs.close();
-    while(run){
-        if(turnOn){
-            updateData();
-            saveData();
-            displayData();
-        }
-        sleepMs(1000);
-    }
 }
 
 void updateData(){
     timeNow = getTimeNow();
-    timeLeft = getTimeLeft();
-    inTemp = getInternalTemp();
-    refTemp = getReferenceTemp();
+    timeLeft = (timerOn? getTimeLeft() : timer);
 }
 
 void saveData(){
-    fs.open ("data.csv", std::fstream::app);
+    fs.open (dataFileName, std::fstream::app);
     fs << timeNow << ","
     << inTemp << ","
     << roomTemp << ","
@@ -65,4 +66,9 @@ void displayData(){
         lcdLoc(LINE1);
         typeln("Menu");
     }
+}
+
+bool isFileExist(const char *fileName){
+    std::ifstream infile(fileName);
+    return infile.good();
 }

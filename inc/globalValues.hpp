@@ -3,7 +3,8 @@
 
 #include "semaphore.hpp"
 
-#define TEMPO_ENTRE_REQUEST 500
+#define TEMPO_ENTRE_REQUEST 10
+#define RETRY 3
 
 #define ENDERECO 0x00
 #define ENDERECO_ENVIO 0x01
@@ -29,6 +30,6 @@ extern semaphore smph;
 
 extern bool run, turnOn, heating, timerOn;
 extern int timer, fanPercent, resistorPercent;
-extern float roomTemp;
+extern float roomTemp, inTemp, refTemp;
 
 #endif

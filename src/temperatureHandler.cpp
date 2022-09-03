@@ -2,6 +2,7 @@
 #include <cmath>
 
 #include "temperatureHandler.hpp"
+#include "timerHandler.hpp"
 #include "pid.hpp"
 #include "globalValues.hpp"
 #include "helpers.hpp"
@@ -9,65 +10,61 @@
 
 void heat(){
     const float eps = 0.005f;
-    float inTemp, refTemp;
-    while(run){
-        if(heating){
-            inTemp = getInternalTemp();
-            refTemp = getReferenceTemp();            
+    if(heating){
+        inTemp = getInternalTemp();
+        refTemp = getReferenceTemp();            
 
-            // Se a diferença entre a temperatura interna e a de referência
-            // for menor que 0,5% da temperatura de referência, o timer é acionado
-            if(!timerOn && fabs(inTemp - refTemp) < (refTemp * eps)){
-                smph.acquire();
-                timerOn = true;
-                smph.release();
-            }
-
-            pid_atualiza_referencia(refTemp);
-            int controlSignal = pid_controle(inTemp);
-            sendControlSignal(controlSignal);
-
-            sleepMs(300);
-        } else if(turnOn && inTemp > roomTemp){
-            inTemp = getInternalTemp();
-            pid_atualiza_referencia(roomTemp);
-            int controlSignal = pid_controle(inTemp);
-            sendControlSignal(controlSignal);
-            sleepMs(400);
-        } else {
-            if(somethingOn())
-                sendControlSignal(0);
-            sleepMs(500);
+        // Se a diferença entre a temperatura interna e a de referência
+        // for menor que 0,5% da temperatura de referência, o timer é acionado
+        if(!timerOn && fabs(inTemp - refTemp) < (refTemp * eps)){
+            smph.acquire();
+            timerOn = true;
+            smph.release();
+            runTimer();
         }
-    }
 
-    if(somethingOn())
-        sendControlSignal(0);
-    
-    printf("TemperatureHandler finished (%d)\n", somethingOn());
-    return;
+        pid_atualiza_referencia(refTemp);
+        int controlSignal = pid_controle(inTemp);
+        sendControlSignal(controlSignal);
+    } else if(turnOn && inTemp > roomTemp){
+        inTemp = getInternalTemp();
+        pid_atualiza_referencia(roomTemp);
+        int controlSignal = pid_controle(inTemp);
+        sendControlSignal(controlSignal);
+    } else {
+        if(somethingOn())
+            sendControlSignal(0);
+    }
 }
 
 float getInternalTemp(){
     ssize_t rx_length;
-    sendDataRequest(CMD_SOLICITA_TEMPERATURA_INTERNA);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    float inTemp;
-    rx_length = receiveData(CMD_SOLICITA_TEMPERATURA_INTERNA, &inTemp);
-    if(debug) printf("%ld Bytes lidos; Temperatura interna: %f\n", rx_length, inTemp);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    return inTemp;
+    float _inTemp;
+    int retry = RETRY;
+    do{
+        sendDataRequest(CMD_SOLICITA_TEMPERATURA_INTERNA);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        rx_length = receiveData(CMD_SOLICITA_TEMPERATURA_INTERNA, &_inTemp);
+        if(debug) printf("%ld Bytes lidos; Temperatura interna: %f\n", rx_length, _inTemp);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+    } while(rx_length < 0 && retry--);
+
+    return (rx_length < 0? inTemp : _inTemp);
 }
 
 float getReferenceTemp(){
     ssize_t rx_length;
-    sendDataRequest(CMD_SOLICITA_TEMPERATURA_REFERENCIA);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    float refTemp;
-    rx_length = receiveData(CMD_SOLICITA_TEMPERATURA_REFERENCIA, &refTemp);
-    if(debug) printf("%ld Bytes lidos; Temperatura de Referencia: %f\n", rx_length, refTemp);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    return refTemp;
+    float _refTemp;
+    int retry = RETRY;
+    do{
+        sendDataRequest(CMD_SOLICITA_TEMPERATURA_REFERENCIA);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        rx_length = receiveData(CMD_SOLICITA_TEMPERATURA_REFERENCIA, &_refTemp);
+        if(debug) printf("%ld Bytes lidos; Temperatura de Referencia: %f\n", rx_length, _refTemp);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+    } while(rx_length < 0 && retry--);
+
+    return (rx_length < 0? refTemp : _refTemp);
 }
 
 void sendControlSignal(int controlSignal){

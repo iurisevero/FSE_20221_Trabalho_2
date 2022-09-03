@@ -3,37 +3,32 @@
 #include "helpers.hpp"
 #include "modbus.hpp"
 
+#include <stdio.h>
+
 uint64_t startTime = 0;
+bool getStartTime = false;
 
 void runTimer(){
-    bool getStartTime = false;
-    int ret;
-    while(run){
-        if(timerOn){
-            if(!getStartTime){
-                startTime = getTimeMs();
-                getStartTime = true;
-            }
-
-            if(getTimeMs() - startTime >= minToMs(timer)){
-                smph.acquire();
-                heating = false;
-                timerOn = false;
-                smph.release();
-                getStartTime = false;
-            }
-
-            sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
-            sleepMs(TEMPO_ENTRE_REQUEST);
-            receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
-
-            sleepMs(200);
-        } else {
-            sleepMs(600);
-        }
+    if(!getStartTime){
+        startTime = getTimeMs();
+        getStartTime = true;
     }
-    printf("TimerHandler finished\n");
-    return;
+
+    if(getTimeMs() - startTime >= minToMs(timer)){
+        smph.acquire();
+        heating = false;
+        timerOn = false;
+        smph.release();
+        getStartTime = false;
+    }
+
+    int retry = RETRY, retValue, ret;
+    do{
+        sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        retValue = receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+    } while(retValue < 0 && retry--);
 }
 
 uint64_t minToMs(int m){

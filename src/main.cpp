@@ -16,9 +16,8 @@
 #include "i2cLCD.hpp"
 
 #include "temperatureHandler.hpp"
-#include "timerHandler.hpp"
-#include "userCommandHandler.hpp"
 #include "linux_userspace.hpp"
+#include "internalClock.hpp"
 
 void signalHandler(int signum){
     printf("Interrupt signal (%d) received.\n", signum);
@@ -40,18 +39,29 @@ int setPins(){
 void reset(){
     sendControlSignal(0);
     unsigned char byte = 0;
-    int ret;
-    sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    sendData(CMD_ENVIA_TEMPORIZADOR, 0);
-    sleepMs(TEMPO_ENTRE_REQUEST);
-    receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+    int ret, retry = 3;
+    ssize_t retValue;
+    do{
+        sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        retValue = receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+    } while(retValue < 0 && retry--);
+
+    do{
+        sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        retValue = receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+    } while(retValue < 0 && retry--);
+
+    do{
+        printf("Try temporizador: %d\n", retry);
+        sendData(CMD_ENVIA_TEMPORIZADOR, 3 - retry);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+        retValue = receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+        sleepMs(TEMPO_ENTRE_REQUEST);
+    } while(retValue < 0 && retry--);
     ClrLcd();
 }
 
@@ -70,8 +80,13 @@ int main(int argc, const char * argv[]) {
     char i2cPath[] = "/dev/i2c-1";
     if ((i2cFd = open(i2cPath, O_RDWR)) < 0){
         fprintf(stderr, "Failed to open the i2c bus %s\n", i2cPath);
-        exit(1);
+        return -1;
     }
+    int retry = RETRY;
+    int8_t rslt;
+    do{
+        rslt = runBME280Sensors(i2cFd);
+    } while(rslt != 0 && retry--);
 
     pid_configura_constantes(30.0, 0.2, 400.0);
 
@@ -80,14 +95,8 @@ int main(int argc, const char * argv[]) {
 
     reset();
 
-    std::thread runUserCommandHandler(runUserCommand);
-    std::thread runTimerHandler(runTimer);
-    std::thread runTemperatureHandler(heat);
-    std::thread runSensors(runBME280Sensors, i2cFd);
-    runUserCommandHandler.join();
-    runTimerHandler.join();
-    runTemperatureHandler.join();
-    runSensors.join();
+    std::thread runInternalClock(internalClock);
+    runInternalClock.join();
 
     close(wiringPiFd);
     close(wiringPiI2CFd);

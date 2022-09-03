@@ -9,31 +9,40 @@
 
 void runUserCommand(){
     int userCmd;
-    while(run){
+
+    int retry = RETRY;
+    ssize_t rx_length;
+    do{
         sendDataRequest(CMD_SOLICITA_COMANDO_USUARIO);
         sleepMs(TEMPO_ENTRE_REQUEST);
-        ssize_t rx_length = receiveData(CMD_SOLICITA_COMANDO_USUARIO, &userCmd);
-        if(rx_length > 0 && userCmd != 0){
-            printf("Comando usuário: %#x\n", userCmd);
-            handleUserInput(userCmd);
-        }
-        sleepMs(TEMPO_ENTRE_REQUEST);
+        rx_length = receiveData(CMD_SOLICITA_COMANDO_USUARIO, &userCmd);
+    } while(rx_length < 0 && retry--);
+
+    if(rx_length > 0 && userCmd != 0){
+        printf("Comando usuário: %#x\n", userCmd);
+        handleUserInput(userCmd);
     }
-    printf("UserCommandHandler finished\n");
-    return;
 }
 
 void handleUserInput(int userCmd){
     unsigned char byte;
-    int ret;
+    int ret, retry;
+    ssize_t retValue;
     if(turnOn){
         switch (userCmd){
+            case 0x01:
+                printf("Programa já iniciado");
+                break;
             case 0x02:
                 turnOn = false;
                 byte = 0;
-                sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
-                sleepMs(TEMPO_ENTRE_REQUEST);
-                receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
+                retry = RETRY;
+                do{
+                    sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                    retValue = receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                } while(retValue < 0 && retry--);
                 ClrLcd();
                 break;
             case 0x03:
@@ -41,32 +50,48 @@ void handleUserInput(int userCmd){
                 heating = true;
                 smph.release();
                 byte = 1;
-                sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
-                sleepMs(TEMPO_ENTRE_REQUEST);
-                receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
+                retry = RETRY;
+                do{
+                    sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                    retValue = receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                } while(retValue < 0 && retry--);
                 break;
             case 0x04:
                 smph.acquire();
                 heating = false;
                 smph.release();
                 byte = 0;
-                sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
-                sleepMs(TEMPO_ENTRE_REQUEST);
-                receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
+                retry = RETRY;
+                do{
+                    sendData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, byte);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                    retValue = receiveData(CMD_ENVIA_ESTADO_FUNCIONAMENTO, &ret, true);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                } while(retValue < 0 && retry--);
                 break;
             case 0x05:
                 timer++;
-                if(!timerOn) sendData(CMD_ENVIA_TEMPORIZADOR, timer);
-                else sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
-                sleepMs(TEMPO_ENTRE_REQUEST);
-                receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+                retry = RETRY;
+                do{
+                    if(timerOn) sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
+                    else sendData(CMD_ENVIA_TEMPORIZADOR, timer);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                    retValue = receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                } while(retValue < 0 && retry--);
                 break;
             case 0x06:
                 timer--;
-                if(!timerOn) sendData(CMD_ENVIA_TEMPORIZADOR, timer);
-                else sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
-                sleepMs(TEMPO_ENTRE_REQUEST);
-                receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+                retry = RETRY;
+                do{
+                    if(timerOn) sendData(CMD_ENVIA_TEMPORIZADOR, getTimeLeft());
+                    else sendData(CMD_ENVIA_TEMPORIZADOR, timer);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                    retValue = receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
+                    sleepMs(TEMPO_ENTRE_REQUEST);
+                } while(retValue < 0 && retry--);
                 break;
             case 0x07:
                 printf("TODO\n");
@@ -78,8 +103,12 @@ void handleUserInput(int userCmd){
     else if(userCmd == 0x01){
         turnOn = true;
         byte = 1;
-        sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
-        sleepMs(TEMPO_ENTRE_REQUEST);
-        receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
+        retry = RETRY;
+        do{
+            sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
+            sleepMs(TEMPO_ENTRE_REQUEST);
+            retValue = receiveData(CMD_ENVIA_ESTADO_SISTEMA, &ret, true);
+            sleepMs(TEMPO_ENTRE_REQUEST);
+        } while(retValue < 0 && retry--);
     }
 }

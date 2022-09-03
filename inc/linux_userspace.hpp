@@ -45,7 +45,7 @@ void user_delay_us(uint32_t period, void *intf_ptr);
  * Humidity
  *
  */
-void print_sensor_data(struct bme280_data *comp_data);
+void print_sensor_data();
 
 /*!
  *  @brief Function for reading the sensor's registers through I2C bus.
@@ -94,12 +94,17 @@ int8_t user_i2c_write(uint8_t reg_addr, const uint8_t *data, uint32_t len, void 
  * @retval BME280_E_NVM_COPY_FAILED - Error: NVM copy failed
  *
  */
-int8_t stream_sensor_data_forced_mode(struct bme280_dev *dev);
+int8_t stream_sensor_data_forced_mode();
 
 /*!
  * @brief This function starts execution of the program.
  */
-void runBME280Sensors(int _idFd);
+int8_t runBME280Sensors(int _idFd);
+
+/*!
+ * @brief This function updates room temperature.
+ */
+void updateSensorData();
 
 /*!
  * @brief Function returns the struct with the captured data

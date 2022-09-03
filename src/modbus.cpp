@@ -67,7 +67,11 @@ ssize_t sendAssembleData(unsigned char * message, ssize_t _size){
     unsigned short crc = calcula_CRC(message, _size);
     addCRC(crc, &message[_size]);
     _size += sizeof(crc);
-    return Uart::sendData(message, _size);
+    int retry = RETRY;
+    ssize_t retValue;
+    do{
+        retValue = Uart::sendData(message, _size);
+    } while(retValue < 0 && retry--);
 }
 
 ssize_t receiveData(unsigned char cmd, int * value, bool isReturn/*=false*/){
@@ -92,6 +96,11 @@ ssize_t receiveData(unsigned char cmd, char * value,  bool isReturn/*=false*/){
     unsigned char * message = (unsigned char *) malloc(4);
     ssize_t expectedSize = 4;
     ssize_t _size = Uart::receiveData(message, expectedSize);
+    if(debug){
+        printf("Modbus receiveData command %#x\nmessage (%ld): ", cmd, _size);
+        printArrHex(message, _size);
+        printf("isReturn: %d\n", isReturn);
+    }
     if(_size != expectedSize){
         printf("Erro! Tamanho do dado recebido nao corresponde ao esperado\n");
         return -1;
@@ -129,6 +138,11 @@ ssize_t receiveData(unsigned char cmd, char * value,  bool isReturn/*=false*/){
 
 ssize_t receiveConstantSizeData(unsigned char * message, ssize_t expectedSize, unsigned char subCmd, bool isReturn/*=false*/){
     ssize_t _size = Uart::receiveData(message, expectedSize);
+    if(debug){
+        printf("Modbus receiveData command %#x\nmessage (%ld): ", subCmd, _size);
+        printArrHex(message, _size);
+        printf("isReturn: %d\n", isReturn);
+    }
     if(_size != expectedSize){
         printf("Erro! Tamanho do dado recebido nao corresponde ao esperado\n");
         return -1;
