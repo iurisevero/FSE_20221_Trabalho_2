@@ -94,7 +94,10 @@ void handleUserInput(int userCmd){
                 } while(retValue < 0 && retry--);
                 break;
             case 0x07:
-                printf("TODO\n");
+                if(!heating){ // Não permitir que mude a opção depois que iniciar o funcionamento
+                    menuSelection = (menuSelection + 1) % MENU_SIZE;
+                    autoMode = menuSelection;
+                }
                 break;
             default:
                 printf("Comando não listado.\n");

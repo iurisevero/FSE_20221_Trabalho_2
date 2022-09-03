@@ -3,6 +3,8 @@
 
 #include "semaphore.hpp"
 
+#include <string>
+
 #define TEMPO_ENTRE_REQUEST 10
 #define RETRY 3
 
@@ -22,14 +24,24 @@
 #define VENTOINHA 5
 
 #define MATRICULA_SIZE 4
+#define MENU_SIZE 6
 
 extern const char MATRICULA[4];
 extern const bool debug;
 
 extern semaphore smph;
 
-extern bool run, turnOn, heating, timerOn;
-extern int timer, fanPercent, resistorPercent;
+extern bool run, turnOn, heating, timerOn, autoMode;
+extern int timer, fanPercent, resistorPercent, menuSelection;
 extern float roomTemp, inTemp, refTemp;
+
+struct preDefinedRecepies
+{
+    std::string name;
+    int time;
+    int temperature;
+};
+
+extern preDefinedRecepies recipies[6];
 
 #endif

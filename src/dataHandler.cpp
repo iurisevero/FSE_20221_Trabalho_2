@@ -63,8 +63,20 @@ void displayData(){
         typeln(line2);
     }else{
         ClrLcd();
-        lcdLoc(LINE1);
-        typeln("Menu");
+        if(autoMode){
+            lcdLoc(LINE1);
+            typeln(recipies[menuSelection].name.c_str());
+            char *line2;
+            asprintf(&line2, "Temp:%02d Time:%02d", 
+                recipies[menuSelection].temperature,
+                recipies[menuSelection].time
+            );
+            lcdLoc(LINE2);
+            typeln(line2);
+        } else{
+            lcdLoc(LINE1);
+            typeln("Modo manual");
+        }
     }
 }
 

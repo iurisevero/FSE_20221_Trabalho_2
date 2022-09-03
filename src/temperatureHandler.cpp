@@ -12,7 +12,8 @@ void heat(){
     const float eps = 0.005f;
     if(heating){
         inTemp = getInternalTemp();
-        refTemp = getReferenceTemp();            
+        // Se tiver no modo automático, bloqueia a alteração da temperatura de referência
+        refTemp = (autoMode? recipies[menuSelection].temperature : getReferenceTemp());
 
         // Se a diferença entre a temperatura interna e a de referência
         // for menor que 0,5% da temperatura de referência, o timer é acionado
