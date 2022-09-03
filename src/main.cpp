@@ -39,7 +39,7 @@ int setPins(){
 void reset(){
     sendControlSignal(0);
     unsigned char byte = 0;
-    int ret, retry = 3;
+    int ret, retry = RETRY;
     ssize_t retValue;
     do{
         sendData(CMD_ENVIA_ESTADO_SISTEMA, byte);
@@ -56,8 +56,7 @@ void reset(){
     } while(retValue < 0 && retry--);
 
     do{
-        printf("Try temporizador: %d\n", retry);
-        sendData(CMD_ENVIA_TEMPORIZADOR, 3 - retry);
+        sendData(CMD_ENVIA_TEMPORIZADOR, 0);
         sleepMs(TEMPO_ENTRE_REQUEST);
         retValue = receiveData(CMD_ENVIA_TEMPORIZADOR, &ret, true);
         sleepMs(TEMPO_ENTRE_REQUEST);
